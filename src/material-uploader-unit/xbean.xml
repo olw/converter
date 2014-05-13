@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+    xmlns:test="http://olw.elc.tu-darmstadt.de/schemas/test"
+    xmlns:services="http://olw.elc.tu-darmstadt.de/services">
+	
+	<bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		
+		<property name="locations">
+		 	<list>
+        		<value>file:///opt/olw/conf/olw-converter-component.conf</value>
+        	</list>
+   		</property>
+	</bean>
+			
+	<!-- Define our test provider, offering ourService001 -->		
+	<test:material-upload-provider 
+				service="services:uploadService001" 
+				endpoint="MaterialUploader"
+				username="${tomcat.username}"
+				password="${tomcat.password}"			
+				webDAVServer="${repository.konv.url}"
+				workspaceName = "${workspace.material}"
+				/>
+				
+</beans>

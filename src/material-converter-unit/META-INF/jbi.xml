@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jbi version="1.0"
+	xmlns="http://java.sun.com/xml/ns/jbi">
+	xmlns:services="http://olw.elc.tu-darmstadt.de/services">
+	
+	<services binding-component="false" >
+		<provides service-name="services:converterService001" endpoint-name="MaterialConverter"/>
+	</services>
+</jbi>

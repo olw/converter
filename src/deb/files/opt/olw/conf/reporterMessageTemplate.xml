@@ -1,0 +1,5 @@
+<reporterMessage>
+	<subject>[Material-Konvertierung] Ihr Material [Material_Name] wurde
+		veröffentlicht</subject>
+	<content>Sehr geehrte Damen und Herren,[new_line][new_line]Ihr Material [Material_Name] wurde soeben erfolgreich auf OpenLearnWare veröffentlicht.[new_line][new_line]Mit freundlichen Grüßen,[new_line]Ihr OpenLearnWare-Team</content>
+</reporterMessage>

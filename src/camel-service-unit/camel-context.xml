@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+    xmlns:services="http://olw.elc.tu-darmstadt.de/services"
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:camel="http://camel.apache.org/schema/spring">
+	xsi:schemaLocation="
+          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+		
+	<!-- Define our Camel route -->
+	<camel:camelContext id="camelContext">
+		
+		<camel:routeBuilder ref="converterRoute"/>
+	</camel:camelContext>
+	
+	<bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		
+		<property name="locations">
+		 	<list>
+        		<value>file:///opt/olw/conf/olw-converter-component.conf</value>
+        	</list>
+   		</property>
+	</bean>
+	<bean id="converterRoute" class="de.tu_darmstadt.elc.olw.jbi.component.camel.ConverterRoute">
+		<property name="activeMQQueue" value="${converter.activemq.queue}" />
+	</bean>
+
+	<!-- Prepare configuration -->
+	<bean id="prefetchPolicy" class="org.apache.activemq.ActiveMQPrefetchPolicy">
+		<property name="queuePrefetch" value="1"/>
+	</bean>
+
+	<!-- Prepare a JMS connection factory -->
+	<bean id="jmsConnectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="${converter.activemq.brokerURL}"/>
+		<property name="prefetchPolicy" ref="prefetchPolicy"/>
+	</bean>
+	
+	<!-- Prepare a pooling JMS connection factory as wrapper -->
+	<!--
+	<bean id="jmsPooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
+	    <property name="connectionFactory" ref="jmsConnectionFactory"/>
+	</bean>
+	-->
+	
+	<!-- Prepare a JMS destination -->
+	<!--
+	<bean id="jmsAuthorDestination" class="org.apache.activemq.command.ActiveMQQueue">
+		<constructor-arg value="dao.author"/>
+	</bean>
+	-->
+	<bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="transacted" value="false"/>
+		<property name="concurrentConsumers" value="1"/>
+    </bean>
+
+	<bean id="activemq-jobs" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="configuration" ref="jmsConfig"/>
+	</bean>
+	
+	
+	
+	<!-- Prepare an XStream marshaller -->
+	<bean id="xstreamMarshaller" class="org.logicblaze.lingo.jms.marshall.XStreamMarshaller">
+	</bean>
+
+	
+	<classpath inverse="true">
+		<library>servicemix-shared</library>
+		<component>servicemix-wsn2005</component>
+		<component>servicemix-jms</component>
+		<location>lib/activemq-camel-5.4.2.jar</location>
+		<location>lib/camel-jms-2.2.0.jar</location>
+		<location>lib/hibernate-jpa-2.0-api-1.0.0.Final.jar</location>
+		<location>lib/hibernate-search-3.3.0.Final.jar</location>
+		<location>lib/lingo-1.3.jar</location>
+		<location>lib/xbean-spring-3.4.3.jar</location>
+		<location>lib/xpp3-1.1.4c.jar</location>
+		<location>lib/xstream-1.1.3.jar</location>
+		<location>lib/classes.jar</location>
+		<location>lib/httpcore-4.1.jar</location>
+		
+		
+	</classpath>
+</beans>
