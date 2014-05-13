@@ -1,0 +1,7 @@
+language: java
+branches:
+    # ignoring travis build for the moment
+    # after cleanup and maven/gradle use
+    # it will be triggered again
+    except:
+        - /^.*$/
