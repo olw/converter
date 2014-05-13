@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jbi xmlns="http://java.sun.com/xml/ns/jbi" version="1.0">
+	<service-assembly>
+		<identification>
+			<name>olw-converter-service-assembly</name>
+			<description>OpenLearnWare Converter Component</description>
+		</identification>
+
+		<service-unit>
+			<identification>
+				<name>material-downloader-unit</name>
+	       		<description>Material Downloader Unit</description>
+			</identification>
+     		<target>
+				<component-name>olw-converter-component</component-name>
+				<artifacts-zip>material-downloader-unit.zip</artifacts-zip>
+			</target>
+		</service-unit>		
+		
+		<service-unit>
+			<identification>
+				<name>material-converter-unit</name>
+	       		<description>Material Converter Unit</description>
+			</identification>
+     		<target>
+				<component-name>olw-converter-component</component-name>
+				<artifacts-zip>material-converter-unit.zip</artifacts-zip>
+			</target>
+		</service-unit>
+		
+		<service-unit>
+			<identification>
+				<name>material-uploader-unit</name>
+	       		<description>Material Uploader Unit</description>
+			</identification>
+     		<target>
+				<component-name>olw-converter-component</component-name>
+				<artifacts-zip>material-uploader-unit.zip</artifacts-zip>
+			</target>
+		</service-unit>			
+		
+		
+		<service-unit>
+			<identification>
+				<name>reporter-unit</name>
+	       		<description>Reporter Service Unit</description>
+			</identification>
+     		<target>
+				<component-name>olw-converter-component</component-name>
+				<artifacts-zip>reporter-unit.zip</artifacts-zip>
+			</target>
+		</service-unit>
+		
+		
+		<service-unit>
+			<identification>
+				<name>olw-camel-service-unit</name>
+	       		<description>OpenLearnWare Test Camel Service Unit</description>
+			</identification>
+     		<target>
+				<component-name>servicemix-camel</component-name>
+				<artifacts-zip>camel-service-unit.zip</artifacts-zip>
+			</target>
+		</service-unit>
+	</service-assembly>
+</jbi>

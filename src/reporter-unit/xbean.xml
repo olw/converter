@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+    xmlns:test="http://olw.elc.tu-darmstadt.de/schemas/test"
+    xmlns:services="http://olw.elc.tu-darmstadt.de/services">
+		
+	<bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		
+		<property name="locations">
+		 	<list>
+        		<value>file:///opt/olw/conf/olw-converter-component.conf</value>
+        	</list>
+   		</property>
+	</bean>		
+	<test:reporter-provider 
+				service="services:reporterService001" 
+				endpoint="Reporter"
+				smtpHostName="${smtp.host}"
+				smtpHostPort = "${smtp.port}"
+				adminAddress="${admin.email}"
+				reporterAddress = "${report.email.sender}"
+				reporterMessageTemplate= "${report.email.template}"
+				repositoryKonv="${repository.konv.url}"
+				repositoryRoh="${repository.roh.url}"
+				archiveWorkspace="${workspace.archive}"
+				materialWorkspace="${workspace.material}"
+				fakeLogIn="${restdb.fakelogin}"
+				apiURL="${restdb.apiURL}"		
+				/>
+				
+</beans>

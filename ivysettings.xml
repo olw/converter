@@ -1,0 +1,37 @@
+<ivysettings>
+	<property name="ivy.local.default.ivy.pattern"
+		value="[organisation]/[module]/[revision]/[type]s/[artifact].[ext]" override="false" />
+	<property name="ivy.local.default.artifact.pattern"
+		value="[organisation]/[module]/[revision]/[type]s/[artifact].[ext]" override="false" />
+	<property name="java.net.maven.pattern" value="[organisation]/jars/[module]-[revision].[ext]" />
+	<settings defaultResolver="nexus" />
+	<caches defaultCacheDir="${build}/cache" />
+	<credentials host="${repository.host}" realm="Sonatype Nexus Repository Manager"
+		username="${repository.username}" passwd="${repository.password}" />
+	<namespaces>
+		<namespace name="maven2">
+			<rule>
+				<fromsystem>
+					<src org="apache" module=".+" />
+					<dest org="$m0" module="$m0" />
+				</fromsystem>
+				<tosystem>
+					<src org="commons-.+" module="commons-.+" />
+					<dest org="apache" module="$m0" />
+				</tosystem>
+			</rule>
+		</namespace>
+	</namespaces>
+	<resolvers>
+		<filesystem name="local">
+			<ivy pattern="${build}/local/${ivy.local.default.ivy.pattern}" />
+			<artifact pattern="${build}/local/${ivy.local.default.artifact.pattern}" />
+		</filesystem>
+		<url name="nexus" m2compatible="true" checksums="">
+			<artifact
+				pattern="http://${repository.host}:7080/nexus/content/repositories/snapshots/[organization]/[module]/[revision]/[type]s/[artifact](-[classifier])-[revision].[ext]" />
+			<ivy
+				pattern="http://${repository.host}:7080/nexus/content/repositories/snapshots/[organization]/[module]/[revision]/ivys/ivy-[revision].xml" />
+		</url>
+	</resolvers>
+</ivysettings>

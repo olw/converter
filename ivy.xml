@@ -1,0 +1,11 @@
+<ivy-module version="2.0">
+	<info organisation="de.tu_darmstadt.elc" module="${ant.project.name}" revision="${version.number}" status="integration"/>
+	
+	<publications>
+		<artifact name="${ant.project.name}" type="deb" ext="deb"/>
+	</publications>
+
+	<dependencies>
+		<!-- No dependencies -->
+	</dependencies>
+</ivy-module>

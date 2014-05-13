@@ -1,0 +1,260 @@
+<?xml version="1.0"?>
+<project name="OLW Converter Component" default="service-configuration" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property name="src" location="src/java" />
+	<property name="build" location="build" />
+	<property name="dist" location="dist" />
+	<property name="lib" location="lib" />
+	<property name="version.major" value="0" />
+	<property name="version.minor" value="2" />
+    <property name="version.patch" value="0" />
+	<property name="version" value="${version.major}.${version.minor}.${version.patch}" />
+	<property name="servicemix.version" value="3.3.2" />
+	<property name="package.name" value="olw-converter-component" />
+	<property name="package.arch" value="all" />
+	<property name="thumbnailDir" location="src/deb/files/opt/olw/thumbnails" />
+	<property name="pdfbox" location="src/deb/files/opt/olw/olw-ffmpeg/bin/pdfbox-app.jar" />
+	<property name="confDir" location="src/deb/files/opt/olw/conf" />
+	<property name="confFile" location="${confDir}/olw-converter-component.conf" />
+
+	<path id="classpath.libs">
+		<fileset dir="lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	<path id="classpath.ant.ivy">
+		<fileset dir="lib/ant/ivy">
+			<include name="commons-codec-1.2.jar" />
+			<include name="commons-httpclient-3.0.jar" />
+			<include name="commons-logging-1.0.4.jar" />
+			<include name="commons-vfs-1.0.jar" />
+			<include name="ivy-2.2.0.jar" />
+			<include name="oro-2.0.8.jar" />
+		</fileset>
+	</path>
+	<path id="classpath.ant.ant-deb">
+		<fileset dir="lib/ant/ant-deb">
+			<include name="ant.jar" />
+			<include name="ant-deb.jar" />
+		</fileset>
+	</path>
+
+	<taskdef uri="antlib:org.apache.ivy.ant" resource="org/apache/ivy/ant/antlib.xml" classpathref="classpath.ant.ivy" />
+	<taskdef name="deb" classname="com.googlecode.ant_deb_task.Deb" classpathref="classpath.ant.ant-deb" />
+
+	<target name="clean">
+		<delete dir="${dist}" />
+		<delete dir="${build}" />
+	</target>
+
+	<target name="prepare" depends="clean">
+		<mkdir dir="${dist}" />
+		<mkdir dir="${build}/component" />
+		<mkdir dir="${build}/component/lib" />
+		<mkdir dir="${build}/service-assembly" />
+		<mkdir dir="${build}/service-assembly/META-INF" />
+	</target>
+
+	<target name="component" depends="prepare">
+		<!-- Prepare task for spring configuration -->
+		<taskdef name="xsd-generate" classname="org.apache.xbean.spring.generator.MappingGeneratorTask" classpath="lib/xbean-spring-3.4.3.jar;lib/qdox-1.10.1.jar;lib/commons-logging-1.1.1.jar" />
+
+		<xsd-generate srcdir="src/java" namespace="http://olw.elc.tu-darmstadt.de/schemas/test" metaInfDir="${build}/component/lib" destFile="${build}/component/lib/component.xsd" />
+
+		<!-- Compile component implementation -->
+		<javac destdir="${build}/component/lib" classpathref="classpath.libs" debug="on">
+			<src path="src/java" />
+		</javac>
+
+		<!-- Wrap up component implementation -->
+		<jar destfile="${build}/component/lib/classes.jar">
+			<fileset dir="${build}/component/lib">
+				<include name="**/*.class" />
+				<include name="META-INF/**/*" />
+			</fileset>
+		</jar>
+
+
+		<!-- Add DefaultBootstrap implementation through servicemix-common library -->
+		<!-- TODO: Simplify / drop if possible -->
+		<copy file="lib/servicemix-common-2010.01.jar" todir="${build}/component/lib" />
+
+		<copy todir="${build}/component/lib">
+			<fileset dir="lib/jcr">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+
+		<copy todir="${build}/component/lib">
+			<fileset dir="lib">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+
+		<!-- Wrap up JBI component -->
+		<jar destfile="${dist}/converter-component.jar">
+			<!-- Include implementation and generated metadata -->
+			<fileset dir="${build}/component">
+				<include name="**/*" />
+			</fileset>
+			<!-- Include JBI definition -->
+			<fileset dir="src/converter-component">
+				<include name="META-INF/jbi.xml" />
+			</fileset>
+		</jar>
+		<copy file="${dist}/converter-component.jar" todir="${build}/deb/files/opt/olw/apache-servicemix-${servicemix.version}/hotdeploy" />
+	</target>
+
+	<target name="material-downloader-unit" depends="component">
+		<jar destfile="${dist}/material-downloader-unit.zip">
+			<fileset dir="src/material-downloader-unit" />
+		</jar>
+	</target>
+
+	<target name="material-converter-unit" depends="component">
+		<jar destfile="${dist}/material-converter-unit.zip">
+			<fileset dir="src/material-converter-unit" />
+		</jar>
+	</target>
+
+	<target name="material-uploader-unit" depends="component">
+		<jar destfile="${dist}/material-uploader-unit.zip">
+			<fileset dir="src/material-uploader-unit" />
+		</jar>
+	</target>
+
+	<target name="reporter-unit" depends="component">
+		<jar destfile="${dist}/reporter-unit.zip">
+			<fileset dir="src/reporter-unit" />
+		</jar>
+	</target>
+
+	<target name="camel-service-unit" depends="component">
+		<!-- Wrap up JBI camel service unit -->
+		<jar destfile="${dist}/camel-service-unit.zip">
+			<fileset dir="src/camel-service-unit" />
+			<fileset dir="${build}/component/lib">
+
+				<include name="de/tu_darmstadt/elc/olw/jbi/channel/camel/**/*" />
+			</fileset>
+			<fileset dir="${build}/component">
+				<include name="lib/*.jar" />
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="service-assembly" depends="material-downloader-unit,
+											 material-converter-unit, 
+		                                     material-uploader-unit,
+											 reporter-unit,
+		                                     camel-service-unit">
+		<!-- Wrap up JBI service assembly -->
+		<jar destfile="${dist}/service-assembly.zip">
+			<fileset dir="${dist}">
+				<include name="material-downloader-unit.zip" />
+				<include name="material-converter-unit.zip" />
+				<include name="material-uploader-unit.zip" />
+				<include name="reporter-unit.zip" />
+				<include name="camel-service-unit.zip" />
+			</fileset>
+			<fileset dir="src/service-assembly">
+				<include name="META-INF/**/*" />
+			</fileset>
+		</jar>
+		<copy file="${dist}/service-assembly.zip" todir="${build}/deb/files/opt/olw/apache-servicemix-${servicemix.version}/hotdeploy" />
+
+	</target>
+
+	<target name="service-configuration" depends="service-assembly">
+		<copy todir="${build}/deb">
+			<fileset dir="src/deb" />
+		</copy>
+	</target>
+<!--
+	<!--Deploy productive systems->
+	<!-- change database.properties if deploying to production server ->
+	<target name="create-conf-file">
+		<property file="build.properties" />
+		<echo file="${confFile}">
+			converter.activemq.brokerURL=${converter.activemq.brokerURL}
+			${line.separator}
+			converter.activemq.queue=${converter.activemq.queue}
+			${line.separator}
+			repository.roh.url=${repository.roh.url}
+			${line.separator}
+			repository.konv.url=${repository.konv.url}
+			${line.separator}
+			ffmpeg.path=${ffmpeg.path}
+			${line.separator}
+			thumbnail.path=${thumbnail.path}
+			${line.separator}
+			smtp.host=${smtp.host}
+			${line.separator}
+			smtp.port=${smtp.port}
+			${line.separator}
+			admin.email=${admin.email}
+			${line.separator}
+			report.email.sender=${report.email.sender}
+			${line.separator}
+			report.email.template= ${report.email.template}
+			${line.separator}
+			workspace.incoming=archive
+			${line.separator}
+			workspace.material=material
+			${line.separator}
+			workspace.archive=archive
+			${line.separator}
+			tomcat.username=${tomcat.username}
+			${line.separator}
+			tomcat.password=${tomcat.password}
+			${line.separator}
+			restdb.fakelogin=${restdb.fakelogin}
+			${line.separator}
+			restdb.apiURL=${restdb.apiURL}
+		</echo>
+
+	</target>
+
+	<target name="deploy-thumbnail">
+		<property file="build.properties" />
+		<scp verbose="true" todir="${scp.username}:${scp.password}@${scp.host}:${scp.thumbnailDir}" port="${scp.port}" sftp="true" trust="true">
+			<fileset dir="${thumbnailDir}">
+				<include name="*.*" />
+			</fileset>
+		</scp>
+
+	</target>
+
+	<target name="deploy" depends="service-configuration,create-conf-file,deploy-thumbnail">
+		<property file="build.properties" />
+		<scp verbose="true" todir="${scp.username}:${scp.password}@${scp.host}:${scp.hotdeployDir}" port="${scp.port}" sftp="true" trust="true">
+			<fileset dir="${dist}">
+				<include name="converter-component.jar" />
+				<include name="service-assembly.zip" />
+			</fileset>
+		</scp>
+		<scp file="${pdfbox}" verbose="true" todir="${scp.username}:${scp.password}@${scp.host}:${scp.ffmpegDir}" port="${scp.port}" sftp="true" trust="true">
+
+		</scp>
+
+		<scp verbose="true" todir="${scp.username}:${scp.password}@${scp.host}:${scp.confDir}" port="${scp.port}" sftp="true" trust="true">
+			<fileset dir="${confDir}">
+				<include name="*" />
+
+			</fileset>
+		</scp>
+
+	</target>
+	<target name="change-access-right" depends="deploy">
+		<sshexec host="${scp.host}" port="${scp.port}" trust="yes" username="${scp.username}" password="${scp.password}" command="chmod 775 -R ${scp.thumbnailDir}" />
+
+		<sshexec host="${scp.host}" port="${scp.port}" trust="yes" username="${scp.username}" password="${scp.password}" command="chmod 775 -R ${scp.ffmpegDir}/pdfbox-app.jar" />
+
+		<sshexec host="${scp.host}" port="${scp.port}" trust="yes" username="${scp.username}" password="${scp.password}" command="chmod 664 ${scp.hotdeployDir}/converter-component.jar" />
+
+		<sshexec host="${scp.host}" port="${scp.port}" trust="yes" username="${scp.username}" password="${scp.password}" command="chmod 664 ${scp.hotdeployDir}/service-assembly.zip" />
+
+		<sshexec host="${scp.host}" port="${scp.port}" trust="yes" username="${scp.username}" password="${scp.password}" command="chmod 664  ${scp.confDir}/olw-converter-component.conf" />
+		<sshexec host="${scp.host}" port="${scp.port}" trust="yes" username="${scp.username}" password="${scp.password}" command="chmod 664  ${scp.confDir}/reporterMessageTemplate.xml" />
+	</target>
+-->
+</project>

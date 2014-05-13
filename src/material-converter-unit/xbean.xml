@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+    xmlns:test="http://olw.elc.tu-darmstadt.de/schemas/test"
+    xmlns:services="http://olw.elc.tu-darmstadt.de/services">
+		
+	<bean id="propertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		
+		<property name="locations">
+		 	<list>
+        		<value>file:///opt/olw/conf/olw-converter-component.conf</value>
+        	</list>
+   		</property>
+	</bean>	
+			
+	<test:material-converter-provider
+				service="services:converterService001"
+				ffmpegPath="${ffmpeg.path}"
+				thumbnailPath="${thumbnail.path}"				
+				endpoint="MaterialConverter"
+				/>
+				
+			
+</beans>
